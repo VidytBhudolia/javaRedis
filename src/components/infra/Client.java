@@ -2,6 +2,7 @@ package components.infra;
 
 import components.service.CommandHandler;
 import components.service.RespSerializer;
+import components.service.ResponseDto;
 
 import java.io.*;
 import java.net.Socket;
@@ -30,19 +31,18 @@ public class Client implements Runnable, Closeable {
             OutputStream out = socket.getOutputStream()
         ) {
             while (true) {
-                // 1. Read and parse the raw network bytes
                 List<String> commandArgs = RespSerializer.deserializeArray(reader);
+                if (commandArgs == null || commandArgs.isEmpty()) break;
 
-                if (commandArgs == null || commandArgs.isEmpty()) {
-                    break; // Client closed their terminal
+                ResponseDto dto = commandHandler.execute(commandArgs);
+
+                if (dto != null && dto.responseString() != null) {
+                    out.write(dto.responseString().getBytes());
+                    out.flush();
+                } else {
+                    out.write("-ERR Internal Server Error\r\n".getBytes());
+                    out.flush();
                 }
-
-                // 2. Pass the parsed list to the Engine
-                String response = commandHandler.execute(commandArgs);
-
-                // 3. Write the formatted response back to the client
-                out.write(response.getBytes());
-                out.flush();
             }
         } catch (IOException e) {
             System.out.println("Client disconnected unexpectedly: " + e.getMessage());
