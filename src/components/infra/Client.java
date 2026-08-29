@@ -1,5 +1,6 @@
 package components.infra;
 
+import components.service.ClientSession;
 import components.service.CommandHandler;
 import components.service.RespSerializer;
 import components.service.ResponseDto;
@@ -25,6 +26,7 @@ public class Client implements Runnable, Closeable {
         // Register this client in the pool the moment the thread starts
         pool.add(this);
         System.out.println("Client connected: " + socket.getRemoteSocketAddress());
+        ClientSession session = new ClientSession();
 
         try (
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -34,7 +36,7 @@ public class Client implements Runnable, Closeable {
                 List<String> commandArgs = RespSerializer.deserializeArray(reader);
                 if (commandArgs == null || commandArgs.isEmpty()) break;
 
-                ResponseDto dto = commandHandler.execute(commandArgs);
+                ResponseDto dto = commandHandler.execute(commandArgs, session);
 
                 if (dto != null && dto.responseString() != null) {
                     out.write(dto.responseString().getBytes());

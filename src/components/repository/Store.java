@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Store {
     private final ConcurrentHashMap<String, Value> database;
     private final ConcurrentHashMap<String, Object> keyLocks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Long> keyVersions = new ConcurrentHashMap<>();
 
     public Store() {
         this.database = new ConcurrentHashMap<>();
@@ -12,6 +13,7 @@ public class Store {
 
     public void putValue(String key, Object data, Long expiryTimeMs) {
         database.put(key, new Value(data, expiryTimeMs));
+        incrementVersion(key);
     }
 
     public Object getValue(String key) {
@@ -35,11 +37,12 @@ public class Store {
         if (data instanceof String str) {
             return str;
         }
-        return null; // Handle wrong type access gracefully
+        return null;
     }
 
     public void delete(String key) {
         database.remove(key);
+        incrementVersion(key);
     }
 
     private Object getLockForKey(String key) {
@@ -70,4 +73,13 @@ public class Store {
             }
         }
     }
+
+    public long getVersion(String key) {
+        return keyVersions.getOrDefault(key, 0L);
+    }
+
+    private void incrementVersion(String key) {
+        keyVersions.compute(key, (k, v) -> (v == null) ? 1L : v + 1L);
+    }
+
 }

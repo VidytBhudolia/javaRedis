@@ -2,6 +2,7 @@ package components.service.commands;
 
 import components.repository.Store;
 import components.repository.StreamEntry;
+import components.service.ClientSession;
 import components.service.RedisCommand;
 import components.service.RespSerializer;
 import components.service.ResponseDto;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class XrangeCommand implements RedisCommand {
 
     @Override
-    public ResponseDto execute(List<String> args, Store store) {
+    public ResponseDto execute(List<String> args, Store store, ClientSession session) {
         if (args.size() < 4) {
             return new ResponseDto(RespSerializer.serializeError("wrong number of arguments for 'xrange'"), false);
         }

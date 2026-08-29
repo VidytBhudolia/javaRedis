@@ -2,6 +2,7 @@ package components.service.commands;
 
 import components.repository.Store;
 import components.repository.StreamEntry;
+import components.service.ClientSession;
 import components.service.RedisCommand;
 import components.service.RespSerializer;
 import components.service.ResponseDto;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class XreadCommand implements RedisCommand {
 
     @Override
-    public ResponseDto execute(List<String> args, Store store) {
+    public ResponseDto execute(List<String> args, Store store, ClientSession session) {
         // Syntax: XREAD STREAMS stream1 stream2 0-0 0-0
         int streamsIndex = args.indexOf("STREAMS");
         if (streamsIndex == -1) {
