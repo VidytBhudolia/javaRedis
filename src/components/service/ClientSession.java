@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class ClientSession {
     private boolean isMulti = false;
+    private long ackedOffset = 0;
     private final List<List<String>> transactionQueue = new ArrayList<>();
     private final Map<String, Long> watchedKeys = new HashMap<>();
 
@@ -50,4 +51,13 @@ public class ClientSession {
     public Map<String, Long> getWatchedKeys() {
         return watchedKeys;
     }
+
+    public void setAckedOffset(long offset) {
+        this.ackedOffset = offset;
+    }
+
+    public long getAckedOffset() {
+        return ackedOffset;
+    }
+
 }

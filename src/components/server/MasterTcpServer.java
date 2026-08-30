@@ -10,27 +10,28 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class MasterTcpServer {
-    private final int port;
+    private final ServerState state;
 
     // The server holds the single source of truth for the app
     private final Store store;
     private final ConnectionPool connectionPool;
     private final CommandHandler commandHandler;
 
-    public MasterTcpServer(int port) {
-        this.port = port;
-
-        // 1. Dependency Graph Construction
+    public MasterTcpServer(ServerState state) {
+        this.state = state;
         this.store = new Store();
-        this.connectionPool = new ConnectionPool();
-
-        // We inject the single database instance into the command handler
-        this.commandHandler = new CommandHandler(this.store);
+        this.connectionPool = new ConnectionPool(this.state);
+        // Pass state into the command handler
+        this.commandHandler = new CommandHandler(this.store, this.state, this.connectionPool);
     }
 
     public void start() {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("javaRedis Master Server running on port " + port);
+        if (state.getRole().equals("slave")) {
+            Thread.startVirtualThread(new ReplicaHandshake(state, commandHandler));
+        }
+
+        try (ServerSocket serverSocket = new ServerSocket(state.getPort())) {
+            System.out.println("javaRedis " + state.getRole() + " running on port " + state.getPort());
 
             while (true) {
                 // 2. Block until a network connection arrives

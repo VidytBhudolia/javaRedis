@@ -1,6 +1,8 @@
 package components.service;
 
+import components.infra.ConnectionPool;
 import components.repository.Store;
+import components.server.ServerState;
 import components.service.commands.*;
 import java.util.HashMap;
 import java.util.List;
@@ -8,13 +10,16 @@ import java.util.Map;
 
 public class CommandHandler {
     private final Store store;
-
+    private final ServerState serverState;
     // The Registry mapping a string like "SET" to its specific class
     private final Map<String, RedisCommand> commandRegistry;
+    private final ConnectionPool connectionPool;
 
-    public CommandHandler(Store store) {
+    public CommandHandler(Store store, ServerState serverState, ConnectionPool connectionPool) {
         this.store = store;
+        this.serverState = serverState;
         this.commandRegistry = new HashMap<>();
+        this.connectionPool =connectionPool;
 
         // Register all commands here
         commandRegistry.put("PING", new PingCommand());
@@ -22,6 +27,7 @@ public class CommandHandler {
         commandRegistry.put("SET", new SetCommand());
         commandRegistry.put("GET", new GetCommand());
         commandRegistry.put("TYPE", new TypeCommand());
+        commandRegistry.put("DEL", new DelCommand());
 
 
         commandRegistry.put("LPUSH", new PushCommand(true));
@@ -43,6 +49,11 @@ public class CommandHandler {
 
         commandRegistry.put("WATCH", new WatchCommand());
         commandRegistry.put("UNWATCH", new UnwatchCommand());
+
+        commandRegistry.put("INFO", new InfoCommand(this.serverState));
+        commandRegistry.put("REPLCONF", new ReplconfCommand());
+        commandRegistry.put("PSYNC", new PsyncCommand(this.serverState));
+        commandRegistry.put("WAIT", new WaitCommand(serverState, connectionPool));
     }
 
     // Notice we added ClientSession session to the parameters
