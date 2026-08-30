@@ -38,7 +38,7 @@ public class WaitCommand implements RedisCommand {
         int acks = 0;
 
         // Block the thread and poll the replicas' sessions
-        while (System.currentTimeMillis() - startTime < timeoutMs) {
+        while (timeoutMs == 0 || System.currentTimeMillis() - startTime < timeoutMs) {
             acks = 0;
             for (Client replica : pool.getReplicas()) {
                 if (replica.getSession().getAckedOffset() >= targetOffset) {

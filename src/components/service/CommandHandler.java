@@ -139,4 +139,9 @@ public class CommandHandler {
         // 4. Normal Live Execution
         return command.execute(args, store, session);
     }
+
+    public Store getStore() {
+        return store;
+    }
+
 }

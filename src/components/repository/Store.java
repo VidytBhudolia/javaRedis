@@ -1,5 +1,6 @@
 package components.repository;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Store {
@@ -80,6 +81,10 @@ public class Store {
 
     private void incrementVersion(String key) {
         keyVersions.compute(key, (k, v) -> (v == null) ? 1L : v + 1L);
+    }
+
+    public Map<String, Value> getDatabase(){
+        return database;
     }
 
 }
